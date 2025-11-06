@@ -1,0 +1,24 @@
+[
+  {
+    "id": "wieder",
+    "word": "wieder",
+    "audioUrl": "/assets/audio/wieder.mp3",
+    "letters": ["w", "i", "e", "d", "e", "r", "e", "i", "ä", "ß"],
+    "hints": { "tip": "Common confusion: ‘ie’ vs ‘ei’." }
+  },
+  {
+    "id": "groesse",
+    "word": "größe",
+    "audioUrl": "/assets/audio/groesse.mp3",
+    "letters": ["g", "r", "ö", "ß", "e", "o", "ä", "u", "s", "a"],
+    "hints": { "tip": "Remember: groß becomes Größe with ß." }
+  },
+  {
+    "id": "heissen",
+    "word": "heißen",
+    "audioUrl": "/assets/audio/heissen.mp3",
+    "letters": ["h", "e", "i", "ß", "e", "n", "ä", "o", "u", "s", "i"],
+    "hints": { "tip": "Watch out for ß instead of ss." }
+  }
+]
+
