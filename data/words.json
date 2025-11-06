@@ -8,9 +8,9 @@
   },
   {
     "id": "groesse",
-    "word": "größe",
+    "word": "Größe",
     "audioUrl": "/assets/audio/groesse.mp3",
-    "letters": ["g", "r", "ö", "ß", "e", "o", "ä", "u", "s", "a"],
+    "letters": ["G", "r", "ö", "ß", "e", "o", "ä", "u", "s", "a"],
     "hints": { "tip": "Remember: groß becomes Größe with ß." }
   },
   {

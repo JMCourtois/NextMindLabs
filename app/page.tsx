@@ -24,6 +24,15 @@ function normalizeIndex(index: number, total: number) {
   return ((index % total) + total) % total;
 }
 
+function shuffleArray<T>(input: T[]): T[] {
+  const array = [...input];
+  for (let i = array.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 export default function HomePage() {
   const [words] = useState<Word[]>(() => wordsJson as Word[]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -39,9 +48,15 @@ export default function HomePage() {
   const [isAudioBusy, setIsAudioBusy] = useState(false);
   const [audioAvailable, setAudioAvailable] = useState(true);
   const [shake, setShake] = useState(false);
+  const [showNextPopup, setShowNextPopup] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const nextButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const currentWord = words[currentIndex];
+
+  const [shuffledLetters, setShuffledLetters] = useState<string[]>(() =>
+    currentWord ? [...currentWord.letters] : []
+  );
 
   const allowedLetters = useMemo(() => {
     return new Set((currentWord?.letters ?? []).map((letter) => letter.toLowerCase()));
@@ -94,6 +109,11 @@ export default function HomePage() {
     setShake(false);
     setAudioAvailable(true);
     setIsAudioBusy(false);
+    setShowNextPopup(false);
+
+    if (currentWord) {
+      setShuffledLetters([...currentWord.letters]);
+    }
 
     if (audioRef.current) {
       audioRef.current.pause();
@@ -102,6 +122,20 @@ export default function HomePage() {
       audioRef.current.load();
     }
   }, [currentWord]);
+
+  useEffect(() => {
+    if (!currentWord) {
+      setShuffledLetters([]);
+      return;
+    }
+    setShuffledLetters(shuffleArray(currentWord.letters));
+  }, [currentWord]);
+
+  useEffect(() => {
+    if (showNextPopup && nextButtonRef.current) {
+      nextButtonRef.current.focus();
+    }
+  }, [showNextPopup]);
 
   useEffect(() => {
     function handleKeydown(event: KeyboardEvent) {
@@ -176,7 +210,7 @@ export default function HomePage() {
     const attempt = userInput.join("");
 
     if (!attempt.length) {
-      setFeedback({ message: "Starte mit einem Buchstaben!", tone: "error" });
+      setFeedback({ message: "Fang mit einem Buchstaben an!", tone: "error" });
       setStatus("error");
       triggerShake();
       return;
@@ -187,7 +221,7 @@ export default function HomePage() {
       const message =
         remaining > 0
           ? `Dir fehlen noch ${remaining} Buchstabe${remaining === 1 ? "" : "n"}.`
-          : "Zu viele Buchstaben.";
+          : "Du hast zu viele Buchstaben gewählt.";
       setFeedback({ message, tone: "error" });
       setStatus("error");
       triggerShake();
@@ -198,9 +232,10 @@ export default function HomePage() {
       setIsLocked(true);
       setStatus("success");
       setFeedback({ message: "Richtig!", tone: "success" });
+      setShowNextPopup(true);
     } else {
       const hint = currentWord.hints?.tip ? `Tipp: ${currentWord.hints.tip}` : "Versuch es noch einmal.";
-      setFeedback({ message: `Fast! ${hint}`, tone: "error" });
+      setFeedback({ message: `Noch nicht ganz richtig. ${hint}`, tone: "error" });
       setStatus("error");
       triggerShake();
       setMistakes((prev: Record<string, number>) => ({
@@ -214,6 +249,7 @@ export default function HomePage() {
     if (words.length === 0) {
       return;
     }
+    setShowNextPopup(false);
     setCurrentIndex((prev: number) => normalizeIndex(prev + 1, words.length));
   }
 
@@ -300,17 +336,6 @@ export default function HomePage() {
             {userInput.length} / {currentWord.word.length}
           </div>
         </div>
-        <button
-          type="button"
-          className="check-button"
-          onClick={handleCheck}
-          disabled={isLocked}
-        >
-          Check
-        </button>
-        <p className="hint-text" aria-live="polite">
-          {currentWord.hints?.tip ?? ""}
-        </p>
       </section>
 
       <div
@@ -318,7 +343,7 @@ export default function HomePage() {
         role="group"
         aria-label="Buchstaben auswählen"
       >
-        {currentWord.letters.map((letter: string, index: number) => (
+        {shuffledLetters.map((letter: string, index: number) => (
           <button
             key={`${letter}-${index}`}
             type="button"
@@ -332,30 +357,38 @@ export default function HomePage() {
         ))}
       </div>
 
+      <p className="hint-text" aria-live="polite">
+        {currentWord.hints?.tip ?? ""}
+      </p>
+
       <div className="control-row" role="group" aria-label="Aktionen">
         <button
           type="button"
-          className="control-button"
+          className="control-button control-button--icon"
           onClick={handleBackspace}
           disabled={isLocked || userInput.length === 0}
+          aria-label="Letzten Buchstaben löschen"
+          title="Backspace"
         >
-          Backspace
+          <span aria-hidden="true" className="control-icon">⌫</span>
         </button>
         <button
           type="button"
-          className="control-button"
+          className="control-button control-button--primary control-button--check"
+          onClick={handleCheck}
+          disabled={isLocked}
+        >
+          Check
+        </button>
+        <button
+          type="button"
+          className="control-button control-button--icon"
           onClick={handleClear}
           disabled={isLocked || userInput.length === 0}
+          aria-label="Eingabe löschen"
+          title="Alles löschen"
         >
-          Clear
-        </button>
-        <button
-          type="button"
-          className="control-button"
-          onClick={handleNext}
-          disabled={!isLocked}
-        >
-          Next
+          <span aria-hidden="true" className="control-icon">🧽</span>
         </button>
       </div>
 
@@ -365,6 +398,29 @@ export default function HomePage() {
       >
         {feedback.message}
       </div>
+
+      {showNextPopup && (
+        <div
+          className="next-popup next-popup--visible"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="nextDialogTitle"
+        >
+          <div className="next-popup__content">
+            <p id="nextDialogTitle" className="next-popup__title">
+              Super gemacht!
+            </p>
+            <button
+              ref={nextButtonRef}
+              type="button"
+              className="next-popup__button"
+              onClick={handleNext}
+            >
+              Weiter
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
