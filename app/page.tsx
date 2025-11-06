@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { MutableRefObject, useEffect, useMemo, useRef, useState } from "react";
 import wordsJson from "@/data/words.json";
 
 type Word = {
@@ -51,6 +51,9 @@ export default function HomePage() {
   const [showNextPopup, setShowNextPopup] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const nextButtonRef = useRef<HTMLButtonElement | null>(null);
+  const letterSoundRef = useRef<HTMLAudioElement | null>(null);
+  const errorSoundRef = useRef<HTMLAudioElement | null>(null);
+  const successSoundRef = useRef<HTMLAudioElement | null>(null);
 
   const currentWord = words[currentIndex];
 
@@ -132,6 +135,30 @@ export default function HomePage() {
   }, [currentWord]);
 
   useEffect(() => {
+    if (typeof Audio === "undefined") {
+      return;
+    }
+    letterSoundRef.current = new Audio("/assets/appsounds/letter-pop.mp3");
+    errorSoundRef.current = new Audio("/assets/appsounds/error-buzz.mp3");
+    successSoundRef.current = new Audio("/assets/appsounds/success-chime.mp3");
+
+    [letterSoundRef.current, errorSoundRef.current, successSoundRef.current].forEach(
+      (sound) => {
+        if (sound) {
+          sound.preload = "auto";
+          sound.volume = 0.6;
+        }
+      }
+    );
+
+    return () => {
+      letterSoundRef.current = null;
+      errorSoundRef.current = null;
+      successSoundRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
     if (showNextPopup && nextButtonRef.current) {
       nextButtonRef.current.focus();
     }
@@ -184,6 +211,7 @@ export default function HomePage() {
       triggerShake();
       return;
     }
+    playSound(letterSoundRef);
     setUserInput((prev: string[]) => [...prev, letter]);
   }
 
@@ -210,6 +238,7 @@ export default function HomePage() {
     const attempt = userInput.join("");
 
     if (!attempt.length) {
+      playSound(errorSoundRef);
       setFeedback({ message: "Fang mit einem Buchstaben an!", tone: "error" });
       setStatus("error");
       triggerShake();
@@ -222,6 +251,7 @@ export default function HomePage() {
         remaining > 0
           ? `Dir fehlen noch ${remaining} Buchstabe${remaining === 1 ? "" : "n"}.`
           : "Du hast zu viele Buchstaben gewählt.";
+      playSound(errorSoundRef);
       setFeedback({ message, tone: "error" });
       setStatus("error");
       triggerShake();
@@ -232,9 +262,11 @@ export default function HomePage() {
       setIsLocked(true);
       setStatus("success");
       setFeedback({ message: "Richtig!", tone: "success" });
+      playSound(successSoundRef);
       setShowNextPopup(true);
     } else {
       const hint = currentWord.hints?.tip ? `Tipp: ${currentWord.hints.tip}` : "Versuch es noch einmal.";
+      playSound(errorSoundRef);
       setFeedback({ message: `Noch nicht ganz richtig. ${hint}`, tone: "error" });
       setStatus("error");
       triggerShake();
@@ -260,6 +292,19 @@ export default function HomePage() {
   function handleAnimationEnd() {
     if (shake) {
       setShake(false);
+    }
+  }
+
+  function playSound(ref: MutableRefObject<HTMLAudioElement | null>) {
+    const sound = ref.current;
+    if (!sound) {
+      return;
+    }
+    try {
+      sound.currentTime = 0;
+      void sound.play();
+    } catch (error) {
+      console.warn("Konnte Sound nicht abspielen", error);
     }
   }
 
@@ -336,6 +381,9 @@ export default function HomePage() {
             {userInput.length} / {currentWord.word.length}
           </div>
         </div>
+        <p className="hint-text" aria-live="polite">
+          {currentWord.hints?.tip ?? ""}
+        </p>
       </section>
 
       <div
@@ -356,10 +404,6 @@ export default function HomePage() {
           </button>
         ))}
       </div>
-
-      <p className="hint-text" aria-live="polite">
-        {currentWord.hints?.tip ?? ""}
-      </p>
 
       <div className="control-row" role="group" aria-label="Aktionen">
         <button
