@@ -65,6 +65,8 @@ export default function HomePage() {
     return new Set((currentWord?.letters ?? []).map((letter) => letter.toLowerCase()));
   }, [currentWord]);
 
+  const confettiPieces = useMemo(() => Array.from({ length: 12 }, (_, index) => index), []);
+
   useEffect(() => {
     if (typeof window === "undefined" || words.length === 0) {
       return;
@@ -345,7 +347,14 @@ export default function HomePage() {
           aria-label={audioAvailable ? "Wort anhören" : "Audio nicht verfügbar"}
           title={audioAvailable ? "Wort anhören" : "Audio fehlt"}
         >
-          <span aria-hidden="true">🔊</span>
+          <svg
+            className="audio-icon"
+            aria-hidden="true"
+            viewBox="0 0 48 48"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M20.3 9.4 11 16H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5l9.3 6.6a2 2 0 0 0 3.2-1.6V11a2 2 0 0 0-3.2-1.6ZM18 16.8v14.4L12.8 28H8v-8h4.8ZM31.7 12.3a2 2 0 1 0-3.4 2c2 3.3 2 8.4 0 11.7a2 2 0 1 0 3.4 2c3-5 3-10.7 0-15.7Zm6.6-5.5a2 2 0 0 0-3.4 2c4.3 7.2 4.3 18 0 25.2a2 2 0 0 0 3.4 2c5-8.4 5-20.8 0-29.2Z" />
+          </svg>
         </button>
         <p className="progress-text" aria-live="polite">
           Wort {currentIndex + 1} von {words.length}
@@ -451,6 +460,14 @@ export default function HomePage() {
           aria-labelledby="nextDialogTitle"
         >
           <div className="next-popup__content">
+            <div className="next-popup__confetti" aria-hidden="true">
+              {confettiPieces.map((piece) => (
+                <span
+                  key={piece}
+                  className={`confetti__piece confetti__piece--${(piece % 6) + 1}`}
+                ></span>
+              ))}
+            </div>
             <p id="nextDialogTitle" className="next-popup__title">
               Super gemacht!
             </p>
