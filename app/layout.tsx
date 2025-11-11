@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Deutsch Hörübung",
+  title: "NextMind Labs | Lernübungen",
   description:
-    "Interaktive Übung für Kinder, um tricky deutsche Wörter mit Audio zu lernen.",
+    "Sammlung interaktiver Lernübungen für Kinder – inklusive der 100 Fehlerwörter mit Audio.",
 };
 
 export default function RootLayout({
@@ -14,8 +14,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="de">
-      <body>{children}</body>
+      <body>
+        <a className="skip-link" href="#mainContent">
+          Zum Inhalt springen
+        </a>
+        {children}
+      </body>
     </html>
   );
 }
-

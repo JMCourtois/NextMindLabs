@@ -4,21 +4,21 @@
     "word": "wieder",
     "audioUrl": "/assets/audio/wieder.mp3",
     "letters": ["w", "i", "e", "d", "e", "r", "e", "i", "ä", "ß"],
-    "hints": { "tip": "Achte auf die Reihenfolge von ‘ie’." }
+    "hints": { "tip": "Achte auf die Reihenfolge von \"ie\"." }
   },
   {
     "id": "groesse",
     "word": "Größe",
     "audioUrl": "/assets/audio/groesse.mp3",
     "letters": ["G", "r", "ö", "ß", "e", "o", "ä", "u", "s", "a"],
-    "hints": { "tip": "Denk daran: groß wird zu Größe mit ß." }
+    "hints": { "tip": "Denk daran: \"groß\" wird zu \"Größe\" mit ß." }
   },
   {
     "id": "heissen",
     "word": "heißen",
     "audioUrl": "/assets/audio/heissen.mp3",
     "letters": ["h", "e", "i", "ß", "e", "n", "ä", "o", "u", "s", "i"],
-    "hints": { "tip": "Achtung: In ‘heißen’ steht ein ß, kein ss." }
+    "hints": { "tip": "Achtung: In \"heißen\" steht ein ß, kein ss." }
   }
 ]
 
